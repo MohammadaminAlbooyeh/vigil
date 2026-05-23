@@ -152,8 +152,10 @@ end_to_end_income_prediction_project/
 ├── notebooks/                    # Jupyter notebooks
 │   ├── data_exploration.ipynb    # Data analysis
 │   └── model_evaluation.ipynb    # Model evaluation
-├── models/                       # Trained models (generated)
-├── data/                         # Dataset (generated)
+├── models/                       # Trained models and dataset
+│   ├── adult.csv                 # Adult Census dataset (input data)
+│   ├── income_model.pkl          # Trained XGBoost model
+│   └── preprocessor.pkl          # Preprocessor pipeline
 ├── docs/                         # Documentation
 ├── pyproject.toml                # Project configuration
 ├── setup.py                      # Setup script

@@ -38,14 +38,22 @@ def load_raw_data():
     if not file_path.exists():
         download_adult_dataset()
 
-    # Column names for Adult dataset
-    columns = [
-        'age', 'workclass', 'fnlwgt', 'education', 'education-num',
-        'marital-status', 'occupation', 'relationship', 'race', 'sex',
-        'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income'
-    ]
-
-    df = pd.read_csv(file_path, header=None, names=columns, na_values=' ?')
+    # Load CSV with headers from adult.csv in models directory
+    # The CSV has quoted column names with periods, we need to normalize them
+    df = pd.read_csv(file_path, na_values=['?', ' ?'])
+    
+    # Clean column names: remove quotes and convert periods to hyphens
+    df.columns = (df.columns
+                  .str.strip()
+                  .str.replace('"', '')
+                  .str.replace('.', '-'))
+    
+    # Convert numeric columns to appropriate types
+    numeric_cols = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    
     return df
 
 def load_processed_data():
@@ -72,7 +80,7 @@ def verify_raw_data(file_path=None):
 
     # Try reading a small sample to verify column count
     try:
-        sample = pd.read_csv(file_path, header=None, nrows=5)
+        sample = pd.read_csv(file_path, nrows=5)
     except Exception:
         return False
 

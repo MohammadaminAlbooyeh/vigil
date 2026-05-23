@@ -17,7 +17,7 @@ class TestDownloadAdultDataset:
         with patch('src.data_loader.requests.get') as mock_get:
             # Mock the response
             mock_response = MagicMock()
-            mock_response.content = sample_adult_data.to_csv(index=False, header=False).encode()
+            mock_response.content = sample_adult_data.to_csv(index=False, header=True).encode()
             mock_get.return_value = mock_response
             
             download_adult_dataset()
@@ -30,7 +30,7 @@ class TestDownloadAdultDataset:
         """Test that download skips if file already exists."""
         # Create the file first
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         with patch('src.data_loader.requests.get') as mock_get:
             download_adult_dataset()
@@ -60,9 +60,9 @@ class TestLoadRawData:
 
     def test_load_raw_data_returns_dataframe(self, mock_config, sample_adult_data):
         """Test that load_raw_data returns a DataFrame."""
-        # Create the file
+        # Create the file with headers
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         df = load_raw_data()
         
@@ -70,9 +70,9 @@ class TestLoadRawData:
 
     def test_load_raw_data_has_correct_columns(self, mock_config, sample_adult_data):
         """Test that loaded data has correct column names."""
-        # Create the file
+        # Create the file with headers (matching actual adult.csv format)
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         df = load_raw_data()
         
@@ -90,7 +90,7 @@ class TestLoadRawData:
                 # Create the file after download is called
                 def create_file():
                     file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-                    sample_adult_data.to_csv(file_path, index=False, header=False)
+                    sample_adult_data.to_csv(file_path, index=False, header=True)
                 
                 mock_download.side_effect = create_file
                 
@@ -106,7 +106,7 @@ class TestLoadRawData:
         df_with_missing.loc[0, 'workclass'] = ' ?'
         
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        df_with_missing.to_csv(file_path, index=False, header=False)
+        df_with_missing.to_csv(file_path, index=False, header=True)
         
         df = load_raw_data()
         
@@ -119,9 +119,9 @@ class TestLoadProcessedData:
 
     def test_load_processed_data_returns_dataframe(self, mock_config, sample_adult_data):
         """Test that load_processed_data returns a DataFrame."""
-        # Create raw data file
+        # Create raw data file with headers
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         df = load_processed_data()
         
@@ -140,9 +140,9 @@ class TestLoadProcessedData:
 
     def test_load_processed_data_falls_back_to_raw(self, mock_config, sample_adult_data):
         """Test that load_processed_data falls back to raw data if pickle doesn't exist."""
-        # Create only raw data file
+        # Create only raw data file with headers
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         df = load_processed_data()
         

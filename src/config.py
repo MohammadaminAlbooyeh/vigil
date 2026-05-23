@@ -10,13 +10,13 @@ class Config:
 
     # Project paths
     PROJECT_ROOT = Path(__file__).parent.parent
-    DATA_DIR = PROJECT_ROOT / "data"
+    DATA_DIR = PROJECT_ROOT / "models"  # adult.csv is stored in models directory
     MODELS_DIR = PROJECT_ROOT / "models"
     NOTEBOOKS_DIR = PROJECT_ROOT / "notebooks"
     DOCS_DIR = PROJECT_ROOT / "docs"
 
     # Data settings
-    RAW_DATA_FILE = "adult.csv"  # Assuming Adult Census dataset
+    RAW_DATA_FILE = "adult.csv"  # Adult Census dataset in models directory
     PROCESSED_DATA_FILE = "processed_data.pkl"
     TRAIN_DATA_FILE = "train_data.pkl"
     TEST_DATA_FILE = "test_data.pkl"

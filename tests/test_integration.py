@@ -100,9 +100,9 @@ class TestDataFlowIntegration:
 
     def test_raw_to_preprocessed_flow(self, mock_config, sample_adult_data):
         """Test data flow from raw to preprocessed."""
-        # Save raw data
+        # Save raw data with headers (matching actual format)
         file_path = mock_config.DATA_DIR / mock_config.RAW_DATA_FILE
-        sample_adult_data.to_csv(file_path, index=False, header=False)
+        sample_adult_data.to_csv(file_path, index=False, header=True)
         
         # Load and preprocess
         df = load_raw_data()

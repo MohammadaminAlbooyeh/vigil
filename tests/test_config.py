@@ -22,7 +22,7 @@ class TestConfig:
     def test_data_dir_path(self):
         """Test that DATA_DIR is correctly set."""
         assert isinstance(config.DATA_DIR, Path)
-        assert config.DATA_DIR == config.PROJECT_ROOT / "data"
+        assert config.DATA_DIR == config.PROJECT_ROOT / "models"
 
     def test_models_dir_path(self):
         """Test that MODELS_DIR is correctly set."""

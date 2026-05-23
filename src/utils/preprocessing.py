@@ -16,10 +16,10 @@ def fill_missing_values(df: pd.DataFrame) -> pd.DataFrame:
 	"""Fill missing values deterministically: mode for objects, median for numerics."""
 	df = df.copy()
 	for col in df.columns:
-		if df[col].dtype == 'object':
+		if df[col].dtype in ['object', 'string']:
 			# safe_mode returns a deterministic fallback even if column empty
 			df[col] = df[col].fillna(safe_mode(df[col]))
-		else:
+		elif pd.api.types.is_numeric_dtype(df[col]):
 			median = df[col].median()
 			if pd.isna(median):
 				median = 0
