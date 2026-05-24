@@ -2,8 +2,8 @@
 Configuration settings for the Income Prediction Project.
 """
 
-import os
 from pathlib import Path
+
 
 class Config:
     """Configuration class for the income prediction project."""
@@ -29,19 +29,36 @@ class Config:
 
     # Feature engineering
     CATEGORICAL_FEATURES = [
-        'workclass', 'education', 'marital-status', 'occupation',
-        'relationship', 'race', 'sex', 'native-country',
-        'age_bucket', 'hours_per_week_bucket', 'workclass_sector'
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+        "age_bucket",
+        "hours_per_week_bucket",
+        "workclass_sector",
     ]
-    NUMERICAL_FEATURES = ['age', 'fnlwgt', 'education-num', 'capital-gain',
-                          'capital-loss', 'hours-per-week',
-                          'capital_gain_binary', 'capital_loss_binary',
-                          'marital_status_simplified', 'native_country_is_us']
-    TARGET = 'income'
+    NUMERICAL_FEATURES = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+        "capital_gain_binary",
+        "capital_loss_binary",
+        "marital_status_simplified",
+        "native_country_is_us",
+    ]
+    TARGET = "income"
 
     # Training settings
     CV_FOLDS = 5
-    SCORING = 'accuracy'
+    SCORING = "accuracy"
+
 
 # Global config instance
 config = Config()

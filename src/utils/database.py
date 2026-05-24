@@ -4,7 +4,7 @@ import sqlite3
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class PredictionLogger:
         prediction: int,
         prediction_proba: Tuple[float, float],
         model_version: str = None,
-        request_source: str = "api"
+        request_source: str = "api",
     ) -> None:
         """Log a prediction to the database.
 
@@ -105,7 +105,8 @@ class PredictionLogger:
 
             prediction_label = ">50K" if prediction == 1 else "<=50K"
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO predictions (
                     timestamp, age, workclass, fnlwgt, education, education_num,
                     marital_status, occupation, relationship, race, sex,
@@ -113,29 +114,31 @@ class PredictionLogger:
                     prediction, prediction_label, prediction_proba_0, prediction_proba_1,
                     model_version, request_source
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                datetime.utcnow().isoformat(),
-                features.get('age'),
-                features.get('workclass'),
-                features.get('fnlwgt'),
-                features.get('education'),
-                features.get('education-num'),
-                features.get('marital-status'),
-                features.get('occupation'),
-                features.get('relationship'),
-                features.get('race'),
-                features.get('sex'),
-                features.get('capital-gain'),
-                features.get('capital-loss'),
-                features.get('hours-per-week'),
-                features.get('native-country'),
-                prediction,
-                prediction_label,
-                prediction_proba[0],
-                prediction_proba[1],
-                model_version,
-                request_source
-            ))
+            """,
+                (
+                    datetime.utcnow().isoformat(),
+                    features.get("age"),
+                    features.get("workclass"),
+                    features.get("fnlwgt"),
+                    features.get("education"),
+                    features.get("education-num"),
+                    features.get("marital-status"),
+                    features.get("occupation"),
+                    features.get("relationship"),
+                    features.get("race"),
+                    features.get("sex"),
+                    features.get("capital-gain"),
+                    features.get("capital-loss"),
+                    features.get("hours-per-week"),
+                    features.get("native-country"),
+                    prediction,
+                    prediction_label,
+                    prediction_proba[0],
+                    prediction_proba[1],
+                    model_version,
+                    request_source,
+                ),
+            )
 
             conn.commit()
             conn.close()
@@ -149,7 +152,7 @@ class PredictionLogger:
         offset: int = 0,
         model_version: str = None,
         start_date: str = None,
-        end_date: str = None
+        end_date: str = None,
     ) -> List[Dict]:
         """Retrieve predictions from database.
 
@@ -251,10 +254,10 @@ class PredictionLogger:
             conn.close()
 
             return {
-                'total_predictions': total,
-                'predictions_by_class': class_dist,
-                'avg_confidence_0': avg_proba_0,
-                'avg_confidence_1': avg_proba_1
+                "total_predictions": total,
+                "predictions_by_class": class_dist,
+                "avg_confidence_0": avg_proba_0,
+                "avg_confidence_1": avg_proba_1,
             }
         except Exception as e:
             logger.error(f"Failed to get statistics: {e}")
@@ -265,7 +268,7 @@ class PredictionLogger:
         output_path: Path,
         model_version: str = None,
         start_date: str = None,
-        end_date: str = None
+        end_date: str = None,
     ) -> None:
         """Export predictions to CSV.
 
@@ -279,10 +282,7 @@ class PredictionLogger:
             import csv
 
             predictions = self.get_predictions(
-                limit=999999,
-                model_version=model_version,
-                start_date=start_date,
-                end_date=end_date
+                limit=999999, model_version=model_version, start_date=start_date, end_date=end_date
             )
 
             if not predictions:
@@ -291,7 +291,7 @@ class PredictionLogger:
 
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_path, 'w', newline='') as f:
+            with open(output_path, "w", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=predictions[0].keys())
                 writer.writeheader()
                 writer.writerows(predictions)
@@ -328,11 +328,11 @@ class PredictionLogger:
 
             total = sum(pred_counts.values())
             return {
-                'class_0_predictions': pred_counts.get(0, 0),
-                'class_1_predictions': pred_counts.get(1, 0),
-                'total_predictions': total,
-                'class_0_percentage': 100 * pred_counts.get(0, 0) / total if total > 0 else 0,
-                'class_1_percentage': 100 * pred_counts.get(1, 0) / total if total > 0 else 0
+                "class_0_predictions": pred_counts.get(0, 0),
+                "class_1_predictions": pred_counts.get(1, 0),
+                "total_predictions": total,
+                "class_0_percentage": 100 * pred_counts.get(0, 0) / total if total > 0 else 0,
+                "class_1_percentage": 100 * pred_counts.get(1, 0) / total if total > 0 else 0,
             }
         except Exception as e:
             logger.error(f"Failed to get model performance: {e}")
@@ -347,14 +347,14 @@ class PredictionLogger:
         stats = self.get_statistics(model_version)
         perf = self.get_model_performance(model_version)
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("PREDICTION STATISTICS")
-        print("="*60)
+        print("=" * 60)
         print(f"Total Predictions: {stats.get('total_predictions', 0)}")
         print(f"Predictions by Class: {stats.get('predictions_by_class', {})}")
         print(f"Avg Confidence (<=50K): {stats.get('avg_confidence_0', 0):.4f}")
         print(f"Avg Confidence (>50K): {stats.get('avg_confidence_1', 0):.4f}")
-        print(f"\nClass Distribution:")
+        print("\nClass Distribution:")
         print(f"  <=50K: {perf.get('class_0_percentage', 0):.2f}%")
         print(f"  >50K: {perf.get('class_1_percentage', 0):.2f}%")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")

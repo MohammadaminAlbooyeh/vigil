@@ -4,13 +4,12 @@ Data loading utilities for the Income Prediction Project.
 
 import pandas as pd
 import requests
-import os
-from pathlib import Path
 
 try:
     from .config import config
 except ImportError:
     from config import config
+
 
 def download_adult_dataset():
     """Download the Adult dataset from UCI ML Repository if not present."""
@@ -27,9 +26,10 @@ def download_adult_dataset():
     response = requests.get(url)
     response.raise_for_status()
 
-    with open(file_path, 'wb') as f:
+    with open(file_path, "wb") as f:
         f.write(response.content)
     print(f"Dataset downloaded to {file_path}")
+
 
 def load_raw_data():
     """Load the raw Adult dataset into a pandas DataFrame."""
@@ -40,21 +40,26 @@ def load_raw_data():
 
     # Load CSV with headers from adult.csv in models directory
     # The CSV has quoted column names with periods, we need to normalize them
-    df = pd.read_csv(file_path, na_values=['?', ' ?'])
-    
+    df = pd.read_csv(file_path, na_values=["?", " ?"])
+
     # Clean column names: remove quotes and convert periods to hyphens
-    df.columns = (df.columns
-                  .str.strip()
-                  .str.replace('"', '')
-                  .str.replace('.', '-'))
-    
+    df.columns = df.columns.str.strip().str.replace('"', "").str.replace(".", "-")
+
     # Convert numeric columns to appropriate types
-    numeric_cols = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
+    numeric_cols = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+    ]
     for col in numeric_cols:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-    
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
     return df
+
 
 def load_processed_data():
     """Load processed data if available, otherwise load and process raw data."""

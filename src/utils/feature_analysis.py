@@ -1,8 +1,9 @@
 """Feature importance analysis and visualization utilities."""
 
 import logging
+from typing import List, Tuple
+
 from pathlib import Path
-from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -37,23 +38,22 @@ class FeatureImportanceAnalyzer:
 
         try:
             # Get classifier from pipeline
-            if hasattr(self.model, 'named_steps'):
-                classifier = self.model.named_steps.get('classifier')
+            if hasattr(self.model, "named_steps"):
+                classifier = self.model.named_steps.get("classifier")
             else:
                 classifier = self.model
 
             # Get feature importances
-            if hasattr(classifier, 'feature_importances_'):
+            if hasattr(classifier, "feature_importances_"):
                 importances = classifier.feature_importances_
             else:
                 logger.warning("Model does not have feature_importances_ attribute")
                 return pd.DataFrame()
 
             # Create DataFrame
-            importance_df = pd.DataFrame({
-                'feature': self.feature_names,
-                'importance': importances
-            }).sort_values('importance', ascending=False)
+            importance_df = pd.DataFrame(
+                {"feature": self.feature_names, "importance": importances}
+            ).sort_values("importance", ascending=False)
 
             self.importance_scores = importance_df
             return importance_df
@@ -63,10 +63,7 @@ class FeatureImportanceAnalyzer:
             return pd.DataFrame()
 
     def calculate_permutation_importance(
-        self,
-        X_test: pd.DataFrame,
-        y_test: np.ndarray,
-        n_repeats: int = 10
+        self, X_test: pd.DataFrame, y_test: np.ndarray, n_repeats: int = 10
     ) -> pd.DataFrame:
         """Calculate permutation importance.
 
@@ -82,17 +79,16 @@ class FeatureImportanceAnalyzer:
 
         try:
             perm_importance = permutation_importance(
-                self.model, X_test, y_test,
-                n_repeats=n_repeats,
-                random_state=42,
-                n_jobs=-1
+                self.model, X_test, y_test, n_repeats=n_repeats, random_state=42, n_jobs=-1
             )
 
-            importance_df = pd.DataFrame({
-                'feature': self.feature_names,
-                'importance': perm_importance.importances_mean,
-                'std': perm_importance.importances_std
-            }).sort_values('importance', ascending=False)
+            importance_df = pd.DataFrame(
+                {
+                    "feature": self.feature_names,
+                    "importance": perm_importance.importances_mean,
+                    "std": perm_importance.importances_std,
+                }
+            ).sort_values("importance", ascending=False)
 
             return importance_df
 
@@ -116,10 +112,7 @@ class FeatureImportanceAnalyzer:
         return self.importance_scores.head(n)
 
     def plot_feature_importance(
-        self,
-        output_path: Path = None,
-        top_n: int = 20,
-        figsize: Tuple[int, int] = (12, 8)
+        self, output_path: Path = None, top_n: int = 20, figsize: Tuple[int, int] = (12, 8)
     ) -> None:
         """Plot feature importance.
 
@@ -135,24 +128,18 @@ class FeatureImportanceAnalyzer:
         top_features = self.importance_scores.head(top_n)
 
         fig, ax = plt.subplots(figsize=figsize)
-        sns.barplot(
-            data=top_features,
-            x='importance',
-            y='feature',
-            palette='viridis',
-            ax=ax
-        )
+        sns.barplot(data=top_features, x="importance", y="feature", palette="viridis", ax=ax)
 
-        ax.set_xlabel('Importance Score', fontsize=12)
-        ax.set_ylabel('Feature', fontsize=12)
-        ax.set_title(f'Top {top_n} Feature Importance', fontsize=14, fontweight='bold')
-        ax.grid(axis='x', alpha=0.3)
+        ax.set_xlabel("Importance Score", fontsize=12)
+        ax.set_ylabel("Feature", fontsize=12)
+        ax.set_title(f"Top {top_n} Feature Importance", fontsize=14, fontweight="bold")
+        ax.grid(axis="x", alpha=0.3)
 
         plt.tight_layout()
 
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(output_path, dpi=300, bbox_inches="tight")
             logger.info(f"Feature importance plot saved to {output_path}")
         else:
             plt.show()
@@ -160,9 +147,7 @@ class FeatureImportanceAnalyzer:
         plt.close()
 
     def plot_cumulative_importance(
-        self,
-        output_path: Path = None,
-        figsize: Tuple[int, int] = (10, 6)
+        self, output_path: Path = None, figsize: Tuple[int, int] = (10, 6)
     ) -> None:
         """Plot cumulative feature importance.
 
@@ -175,18 +160,18 @@ class FeatureImportanceAnalyzer:
             return
 
         # Calculate cumulative importance
-        cumsum = self.importance_scores['importance'].cumsum()
+        cumsum = self.importance_scores["importance"].cumsum()
         cumsum_pct = 100 * cumsum / cumsum.iloc[-1]
 
         fig, ax = plt.subplots(figsize=figsize)
-        ax.plot(range(1, len(cumsum_pct) + 1), cumsum_pct.values, 'b-', linewidth=2)
-        ax.axhline(y=80, color='r', linestyle='--', label='80% threshold')
-        ax.axhline(y=90, color='orange', linestyle='--', label='90% threshold')
-        ax.axhline(y=95, color='green', linestyle='--', label='95% threshold')
+        ax.plot(range(1, len(cumsum_pct) + 1), cumsum_pct.values, "b-", linewidth=2)
+        ax.axhline(y=80, color="r", linestyle="--", label="80% threshold")
+        ax.axhline(y=90, color="orange", linestyle="--", label="90% threshold")
+        ax.axhline(y=95, color="green", linestyle="--", label="95% threshold")
 
-        ax.set_xlabel('Number of Features', fontsize=12)
-        ax.set_ylabel('Cumulative Importance (%)', fontsize=12)
-        ax.set_title('Cumulative Feature Importance', fontsize=14, fontweight='bold')
+        ax.set_xlabel("Number of Features", fontsize=12)
+        ax.set_ylabel("Cumulative Importance (%)", fontsize=12)
+        ax.set_title("Cumulative Feature Importance", fontsize=14, fontweight="bold")
         ax.grid(alpha=0.3)
         ax.legend()
 
@@ -194,7 +179,7 @@ class FeatureImportanceAnalyzer:
 
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(output_path, dpi=300, bbox_inches="tight")
             logger.info(f"Cumulative importance plot saved to {output_path}")
         else:
             plt.show()
@@ -212,16 +197,16 @@ class FeatureImportanceAnalyzer:
             return
 
         top_features = self.importance_scores.head(top_n)
-        total_importance = self.importance_scores['importance'].sum()
+        total_importance = self.importance_scores["importance"].sum()
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("FEATURE IMPORTANCE ANALYSIS")
-        print("="*70)
+        print("=" * 70)
         print(f"\nTop {top_n} Most Important Features:\n")
 
         for idx, (_, row) in enumerate(top_features.iterrows(), 1):
-            feature = row['feature']
-            importance = row['importance']
+            feature = row["feature"]
+            importance = row["importance"]
             pct = 100 * importance / total_importance
 
             bar_length = int(pct / 2)
@@ -230,13 +215,13 @@ class FeatureImportanceAnalyzer:
             print(f"{idx:2d}. {feature:30s} {importance:8.4f} ({pct:6.2f}%) {bar}")
 
         # Calculate features needed for 80% importance
-        cumsum = self.importance_scores['importance'].cumsum()
+        cumsum = self.importance_scores["importance"].cumsum()
         cumsum_pct = 100 * cumsum / cumsum.iloc[-1]
         n_80_features = (cumsum_pct <= 80).sum() + 1
 
         print(f"\n{n_80_features} features account for 80% of importance")
         print(f"Total features: {len(self.importance_scores)}")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
 
 class FeatureCorrelationAnalyzer:
@@ -261,9 +246,7 @@ class FeatureCorrelationAnalyzer:
 
     @staticmethod
     def plot_correlation_heatmap(
-        data: pd.DataFrame,
-        output_path: Path = None,
-        figsize: Tuple[int, int] = (12, 10)
+        data: pd.DataFrame, output_path: Path = None, figsize: Tuple[int, int] = (12, 10)
     ) -> None:
         """Plot correlation heatmap.
 
@@ -278,21 +261,21 @@ class FeatureCorrelationAnalyzer:
         sns.heatmap(
             correlation,
             annot=True,
-            fmt='.2f',
-            cmap='coolwarm',
+            fmt=".2f",
+            cmap="coolwarm",
             center=0,
             square=True,
             linewidths=0.5,
             cbar_kws={"shrink": 0.8},
-            ax=ax
+            ax=ax,
         )
 
-        ax.set_title('Feature Correlation Matrix', fontsize=14, fontweight='bold')
+        ax.set_title("Feature Correlation Matrix", fontsize=14, fontweight="bold")
         plt.tight_layout()
 
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(output_path, dpi=300, bbox_inches="tight")
             logger.info(f"Correlation heatmap saved to {output_path}")
         else:
             plt.show()
@@ -301,8 +284,7 @@ class FeatureCorrelationAnalyzer:
 
     @staticmethod
     def get_high_correlations(
-        data: pd.DataFrame,
-        threshold: float = 0.8
+        data: pd.DataFrame, threshold: float = 0.8
     ) -> List[Tuple[str, str, float]]:
         """Get highly correlated feature pairs.
 
@@ -320,10 +302,8 @@ class FeatureCorrelationAnalyzer:
             for j in range(i + 1, len(correlation.columns)):
                 corr_value = correlation.iloc[i, j]
                 if abs(corr_value) >= threshold:
-                    high_corr_pairs.append((
-                        correlation.columns[i],
-                        correlation.columns[j],
-                        corr_value
-                    ))
+                    high_corr_pairs.append(
+                        (correlation.columns[i], correlation.columns[j], corr_value)
+                    )
 
         return sorted(high_corr_pairs, key=lambda x: abs(x[2]), reverse=True)

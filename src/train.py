@@ -31,6 +31,7 @@ except ImportError:
     from utils.model_version import ModelVersionManager
     from utils.feature_analysis import FeatureImportanceAnalyzer
 
+
 def preprocess_data(df):
     """Wrapper preprocessing used by training and tests.
 
@@ -46,6 +47,7 @@ def preprocess_data(df):
 
     return df_proc
 
+
 def create_preprocessor():
     """Create a preprocessor for categorical and numerical features."""
     categorical_transformer = LabelEncoder()  # For simplicity, but actually need OneHot or Ordinal
@@ -53,13 +55,15 @@ def create_preprocessor():
 
     # For pipeline, better to use ColumnTransformer with OneHotEncoder
     from sklearn.preprocessing import OneHotEncoder
+
     preprocessor = ColumnTransformer(
         transformers=[
-            ('num', numerical_transformer, config.NUMERICAL_FEATURES),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), config.CATEGORICAL_FEATURES)
+            ("num", numerical_transformer, config.NUMERICAL_FEATURES),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), config.CATEGORICAL_FEATURES),
         ]
     )
     return preprocessor
+
 
 def train_model():
     """Train the income prediction model."""
@@ -88,17 +92,24 @@ def train_model():
     logger.info("Creating preprocessing pipeline")
     preprocessor = create_preprocessor()
 
-    logger.info(f"Building XGBoost model with n_estimators={config.N_ESTIMATORS}, max_depth={config.MAX_DEPTH}")
-    model = Pipeline([
-        ('preprocessor', preprocessor),
-        ('classifier', XGBClassifier(
-            n_estimators=config.N_ESTIMATORS,
-            max_depth=config.MAX_DEPTH,
-            random_state=config.RANDOM_STATE,
-            use_label_encoder=False,
-            eval_metric='logloss'
-        ))
-    ])
+    logger.info(
+        f"Building XGBoost model with n_estimators={config.N_ESTIMATORS}, max_depth={config.MAX_DEPTH}"
+    )
+    model = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                XGBClassifier(
+                    n_estimators=config.N_ESTIMATORS,
+                    max_depth=config.MAX_DEPTH,
+                    random_state=config.RANDOM_STATE,
+                    use_label_encoder=False,
+                    eval_metric="logloss",
+                ),
+            ),
+        ]
+    )
 
     # Train
     logger.info("Training model...")
@@ -123,13 +134,13 @@ def train_model():
     logger.info("Tracking model version")
     version_manager = ModelVersionManager(config.MODELS_DIR / "versions.json")
     metadata = {
-        'n_estimators': config.N_ESTIMATORS,
-        'max_depth': config.MAX_DEPTH,
-        'test_size': config.TEST_SIZE,
-        'random_state': config.RANDOM_STATE,
-        'n_features': X.shape[1],
-        'train_samples': len(X_train),
-        'test_samples': len(X_test)
+        "n_estimators": config.N_ESTIMATORS,
+        "max_depth": config.MAX_DEPTH,
+        "test_size": config.TEST_SIZE,
+        "random_state": config.RANDOM_STATE,
+        "n_features": X.shape[1],
+        "train_samples": len(X_train),
+        "test_samples": len(X_test),
     }
     version_id = version_manager.add_version(metrics, metadata)
     logger.info(f"Model version {version_id} saved")
@@ -139,7 +150,7 @@ def train_model():
     try:
         logger.info("Analyzing feature importance")
         # Get feature names after preprocessing
-        preprocessor = model.named_steps['preprocessor']
+        preprocessor = model.named_steps["preprocessor"]
         try:
             # Try to get feature names from preprocessor
             feature_names_transformed = preprocessor.get_feature_names_out()
@@ -166,9 +177,9 @@ def train_model():
 
     return model
 
+
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     train_model()

@@ -33,14 +33,14 @@ class ModelVersion:
             Dictionary representation of the model version
         """
         return {
-            'version_id': self.version_id,
-            'timestamp': self.timestamp,
-            'metrics': self.metrics,
-            'metadata': self.metadata
+            "version_id": self.version_id,
+            "timestamp": self.timestamp,
+            "metrics": self.metrics,
+            "metadata": self.metadata,
         }
 
     @staticmethod
-    def from_dict(data: Dict) -> 'ModelVersion':
+    def from_dict(data: Dict) -> "ModelVersion":
         """Create from dictionary.
 
         Args:
@@ -50,11 +50,11 @@ class ModelVersion:
             ModelVersion instance
         """
         version = ModelVersion(
-            version_id=data['version_id'],
-            metrics=data['metrics'],
-            metadata=data.get('metadata', {})
+            version_id=data["version_id"],
+            metrics=data["metrics"],
+            metadata=data.get("metadata", {}),
         )
-        version.timestamp = data.get('timestamp', version.timestamp)
+        version.timestamp = data.get("timestamp", version.timestamp)
         return version
 
 
@@ -78,9 +78,9 @@ class ModelVersionManager:
         """Load versions from file."""
         if self.versions_file.exists():
             try:
-                with open(self.versions_file, 'r') as f:
+                with open(self.versions_file, "r") as f:
                     data = json.load(f)
-                    self.versions = [ModelVersion.from_dict(v) for v in data.get('versions', [])]
+                    self.versions = [ModelVersion.from_dict(v) for v in data.get("versions", [])]
                 logger.info(f"Loaded {len(self.versions)} model versions")
             except Exception as e:
                 logger.error(f"Failed to load versions: {e}")
@@ -92,11 +92,9 @@ class ModelVersionManager:
         """Save versions to file."""
         self.versions_file.parent.mkdir(parents=True, exist_ok=True)
 
-        data = {
-            'versions': [v.to_dict() for v in self.versions]
-        }
+        data = {"versions": [v.to_dict() for v in self.versions]}
 
-        with open(self.versions_file, 'w') as f:
+        with open(self.versions_file, "w") as f:
             json.dump(data, f, indent=2)
 
         logger.info(f"Saved {len(self.versions)} model versions to {self.versions_file}")
@@ -142,7 +140,7 @@ class ModelVersionManager:
                 return version
         return None
 
-    def get_best_version(self, metric: str = 'accuracy') -> Optional[ModelVersion]:
+    def get_best_version(self, metric: str = "accuracy") -> Optional[ModelVersion]:
         """Get the version with best metric.
 
         Args:
@@ -165,7 +163,7 @@ class ModelVersionManager:
 
         return best_version
 
-    def get_version_history(self, metric: str = 'accuracy', limit: int = 10) -> List[Dict]:
+    def get_version_history(self, metric: str = "accuracy", limit: int = 10) -> List[Dict]:
         """Get version history for a specific metric.
 
         Args:
@@ -177,12 +175,14 @@ class ModelVersionManager:
         """
         history = []
         for version in self.versions[-limit:]:
-            history.append({
-                'version_id': version.version_id,
-                'timestamp': version.timestamp,
-                'metric': metric,
-                'value': version.metrics.get(metric, None)
-            })
+            history.append(
+                {
+                    "version_id": version.version_id,
+                    "timestamp": version.timestamp,
+                    "metric": metric,
+                    "value": version.metrics.get(metric, None),
+                }
+            )
         return history
 
     def print_versions(self, limit: int = 10) -> None:
@@ -191,9 +191,9 @@ class ModelVersionManager:
         Args:
             limit: Maximum number of versions to display
         """
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("MODEL VERSION HISTORY")
-        print("="*80)
+        print("=" * 80)
 
         versions_to_show = self.versions[-limit:]
         for i, version in enumerate(reversed(versions_to_show), 1):
@@ -206,7 +206,7 @@ class ModelVersionManager:
             if version.metadata:
                 print(f"   Metadata: {version.metadata}")
 
-        print("\n" + "="*80 + "\n")
+        print("\n" + "=" * 80 + "\n")
 
     @staticmethod
     def _generate_version_id(metrics: Dict) -> str:
@@ -219,10 +219,8 @@ class ModelVersionManager:
             Version ID string (v1, v2, etc. or hash-based)
         """
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        accuracy = metrics.get('accuracy', 0)
-        hash_str = hashlib.md5(
-            f"{timestamp}_{accuracy}".encode()
-        ).hexdigest()[:6]
+        accuracy = metrics.get("accuracy", 0)
+        hash_str = hashlib.md5(f"{timestamp}_{accuracy}".encode()).hexdigest()[:6]
         return f"v_{timestamp}_{hash_str}"
 
     def compare_versions(self, version_id1: str, version_id2: str) -> Dict:
@@ -246,10 +244,10 @@ class ModelVersionManager:
             if metric in v2.metrics:
                 diff = v2.metrics[metric] - v1.metrics[metric]
                 comparison[metric] = {
-                    'v1': v1.metrics[metric],
-                    'v2': v2.metrics[metric],
-                    'difference': diff,
-                    'improvement': diff > 0
+                    "v1": v1.metrics[metric],
+                    "v2": v2.metrics[metric],
+                    "difference": diff,
+                    "improvement": diff > 0,
                 }
 
         return comparison
@@ -263,16 +261,16 @@ class ModelVersionManager:
         """
         comparison = self.compare_versions(version_id1, version_id2)
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print(f"VERSION COMPARISON: {version_id1} vs {version_id2}")
-        print("="*80)
+        print("=" * 80)
 
         for metric, values in comparison.items():
-            v1_val = values['v1']
-            v2_val = values['v2']
-            diff = values['difference']
-            improved = "↑" if values['improvement'] else "↓"
+            v1_val = values["v1"]
+            v2_val = values["v2"]
+            diff = values["difference"]
+            improved = "↑" if values["improvement"] else "↓"
 
             print(f"{metric:15} {v1_val:8.4f} → {v2_val:8.4f} ({diff:+.4f}) {improved}")
 
-        print("="*80 + "\n")
+        print("=" * 80 + "\n")

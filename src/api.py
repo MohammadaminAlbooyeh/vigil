@@ -4,7 +4,6 @@ FastAPI web service for Income Prediction.
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Optional
 import uvicorn
 import logging
 
@@ -17,32 +16,39 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Income Prediction API",
     description="API for predicting income categories using machine learning",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 
 class PredictionRequest(BaseModel):
     age: int = Field(..., ge=18, le=100, description="Age of the person")
-    workclass: str = Field(..., description="Work class",
-                          examples=["Private", "Self-emp-not-inc", "Federal-gov"])
+    workclass: str = Field(
+        ..., description="Work class", examples=["Private", "Self-emp-not-inc", "Federal-gov"]
+    )
     fnlwgt: int = Field(..., gt=0, description="Final weight")
-    education: str = Field(..., description="Education level",
-                          examples=["Bachelors", "Masters", "HS-grad"])
+    education: str = Field(
+        ..., description="Education level", examples=["Bachelors", "Masters", "HS-grad"]
+    )
     education_num: int = Field(..., ge=1, le=16, description="Education number")
-    marital_status: str = Field(..., description="Marital status",
-                               examples=["Married-civ-spouse", "Never-married", "Divorced"])
-    occupation: str = Field(..., description="Occupation",
-                           examples=["Exec-managerial", "Prof-specialty", "Sales"])
-    relationship: str = Field(..., description="Relationship status",
-                             examples=["Husband", "Wife", "Own-child"])
-    race: str = Field(..., description="Race",
-                     examples=["White", "Black", "Asian-Pac-Islander"])
+    marital_status: str = Field(
+        ...,
+        description="Marital status",
+        examples=["Married-civ-spouse", "Never-married", "Divorced"],
+    )
+    occupation: str = Field(
+        ..., description="Occupation", examples=["Exec-managerial", "Prof-specialty", "Sales"]
+    )
+    relationship: str = Field(
+        ..., description="Relationship status", examples=["Husband", "Wife", "Own-child"]
+    )
+    race: str = Field(..., description="Race", examples=["White", "Black", "Asian-Pac-Islander"])
     sex: str = Field(..., description="Sex", examples=["Male", "Female"])
     capital_gain: int = Field(..., ge=0, description="Capital gain")
     capital_loss: int = Field(..., ge=0, description="Capital loss")
     hours_per_week: int = Field(..., ge=1, le=99, description="Hours worked per week")
-    native_country: str = Field(..., description="Native country",
-                               examples=["United-States", "Mexico", "Canada"])
+    native_country: str = Field(
+        ..., description="Native country", examples=["United-States", "Mexico", "Canada"]
+    )
 
 
 class PredictionResponse(BaseModel):
@@ -62,23 +68,25 @@ async def predict(request: PredictionRequest):
     Returns the predicted income category (>50K or <=50K).
     """
     try:
-        logger.debug(f"Prediction request received: age={request.age}, workclass={request.workclass}")
+        logger.debug(
+            f"Prediction request received: age={request.age}, workclass={request.workclass}"
+        )
         # Convert request to dict
         features = {
-            'age': request.age,
-            'workclass': request.workclass,
-            'fnlwgt': request.fnlwgt,
-            'education': request.education,
-            'education-num': request.education_num,
-            'marital-status': request.marital_status,
-            'occupation': request.occupation,
-            'relationship': request.relationship,
-            'race': request.race,
-            'sex': request.sex,
-            'capital-gain': request.capital_gain,
-            'capital-loss': request.capital_loss,
-            'hours-per-week': request.hours_per_week,
-            'native-country': request.native_country
+            "age": request.age,
+            "workclass": request.workclass,
+            "fnlwgt": request.fnlwgt,
+            "education": request.education,
+            "education-num": request.education_num,
+            "marital-status": request.marital_status,
+            "occupation": request.occupation,
+            "relationship": request.relationship,
+            "race": request.race,
+            "sex": request.sex,
+            "capital-gain": request.capital_gain,
+            "capital-loss": request.capital_loss,
+            "hours-per-week": request.hours_per_week,
+            "native-country": request.native_country,
         }
 
         # Validate input
@@ -87,7 +95,7 @@ async def predict(request: PredictionRequest):
             log_validation_errors(errors, features)
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail={"error": "Input validation failed", "details": errors}
+                detail={"error": "Input validation failed", "details": errors},
             )
 
         prediction = predict_income(features)
@@ -96,10 +104,7 @@ async def predict(request: PredictionRequest):
         prediction_label = ">50K" if prediction == 1 else "<=50K"
         logger.info(f"Prediction result: {prediction_label}")
 
-        return PredictionResponse(
-            prediction=str(prediction),
-            prediction_label=prediction_label
-        )
+        return PredictionResponse(prediction=str(prediction), prediction_label=prediction_label)
 
     except HTTPException:
         raise
@@ -116,23 +121,25 @@ async def predict_proba(request: PredictionRequest):
     Returns probabilities for both income categories.
     """
     try:
-        logger.debug(f"Probability request received: age={request.age}, workclass={request.workclass}")
+        logger.debug(
+            f"Probability request received: age={request.age}, workclass={request.workclass}"
+        )
         # Convert request to dict
         features = {
-            'age': request.age,
-            'workclass': request.workclass,
-            'fnlwgt': request.fnlwgt,
-            'education': request.education,
-            'education-num': request.education_num,
-            'marital-status': request.marital_status,
-            'occupation': request.occupation,
-            'relationship': request.relationship,
-            'race': request.race,
-            'sex': request.sex,
-            'capital-gain': request.capital_gain,
-            'capital-loss': request.capital_loss,
-            'hours-per-week': request.hours_per_week,
-            'native-country': request.native_country
+            "age": request.age,
+            "workclass": request.workclass,
+            "fnlwgt": request.fnlwgt,
+            "education": request.education,
+            "education-num": request.education_num,
+            "marital-status": request.marital_status,
+            "occupation": request.occupation,
+            "relationship": request.relationship,
+            "race": request.race,
+            "sex": request.sex,
+            "capital-gain": request.capital_gain,
+            "capital-loss": request.capital_loss,
+            "hours-per-week": request.hours_per_week,
+            "native-country": request.native_country,
         }
 
         # Validate input
@@ -141,17 +148,16 @@ async def predict_proba(request: PredictionRequest):
             log_validation_errors(errors, features)
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail={"error": "Input validation failed", "details": errors}
+                detail={"error": "Input validation failed", "details": errors},
             )
 
         probabilities = predict_proba_income(features)
-        logger.info(f"Probability result: <=50K={probabilities[0]:.4f}, >50K={probabilities[1]:.4f}")
+        logger.info(
+            f"Probability result: <=50K={probabilities[0]:.4f}, >50K={probabilities[1]:.4f}"
+        )
 
         return ProbabilityResponse(
-            probabilities={
-                "<=50K": float(probabilities[0]),
-                ">50K": float(probabilities[1])
-            }
+            probabilities={"<=50K": float(probabilities[0]), ">50K": float(probabilities[1])}
         )
 
     except HTTPException:
@@ -174,7 +180,7 @@ async def root():
         "message": "Income Prediction API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
 
 

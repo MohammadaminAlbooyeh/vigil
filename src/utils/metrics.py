@@ -7,9 +7,15 @@ from typing import Dict, Tuple
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    roc_auc_score, confusion_matrix, classification_report,
-    roc_curve, auc
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+    classification_report,
+    roc_curve,
+    auc,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,36 +63,36 @@ class ModelEvaluator:
 
     def _calculate_classification_metrics(self) -> None:
         """Calculate accuracy, precision, recall, F1."""
-        self.metrics['accuracy'] = float(accuracy_score(self.y_test, self.predictions))
-        self.metrics['precision'] = float(precision_score(self.y_test, self.predictions))
-        self.metrics['recall'] = float(recall_score(self.y_test, self.predictions))
-        self.metrics['f1_score'] = float(f1_score(self.y_test, self.predictions))
+        self.metrics["accuracy"] = float(accuracy_score(self.y_test, self.predictions))
+        self.metrics["precision"] = float(precision_score(self.y_test, self.predictions))
+        self.metrics["recall"] = float(recall_score(self.y_test, self.predictions))
+        self.metrics["f1_score"] = float(f1_score(self.y_test, self.predictions))
 
         logger.debug(f"Classification metrics: {self.metrics}")
 
     def _calculate_confusion_matrix(self) -> None:
         """Calculate and store confusion matrix."""
         cm = confusion_matrix(self.y_test, self.predictions)
-        self.metrics['confusion_matrix'] = cm.tolist()
+        self.metrics["confusion_matrix"] = cm.tolist()
 
         # Calculate related metrics
         tn, fp, fn, tp = cm.ravel()
-        self.metrics['true_negatives'] = int(tn)
-        self.metrics['false_positives'] = int(fp)
-        self.metrics['false_negatives'] = int(fn)
-        self.metrics['true_positives'] = int(tp)
+        self.metrics["true_negatives"] = int(tn)
+        self.metrics["false_positives"] = int(fp)
+        self.metrics["false_negatives"] = int(fn)
+        self.metrics["true_positives"] = int(tp)
 
         # Specificity and sensitivity
         specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
         sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
-        self.metrics['specificity'] = float(specificity)
-        self.metrics['sensitivity'] = float(sensitivity)
+        self.metrics["specificity"] = float(specificity)
+        self.metrics["sensitivity"] = float(sensitivity)
 
         logger.debug(f"Confusion matrix: {cm}")
 
     def _calculate_roc_auc(self) -> None:
         """Calculate ROC-AUC score."""
-        self.metrics['roc_auc'] = float(roc_auc_score(self.y_test, self.pred_proba))
+        self.metrics["roc_auc"] = float(roc_auc_score(self.y_test, self.pred_proba))
         logger.debug(f"ROC-AUC: {self.metrics['roc_auc']:.4f}")
 
     def get_classification_report(self) -> str:
@@ -95,10 +101,7 @@ class ModelEvaluator:
         Returns:
             Formatted classification report string
         """
-        return classification_report(
-            self.y_test, self.predictions,
-            target_names=['<=50K', '>50K']
-        )
+        return classification_report(self.y_test, self.predictions, target_names=["<=50K", ">50K"])
 
     def save_metrics(self, output_path: Path = None) -> None:
         """Save metrics to JSON file.
@@ -111,16 +114,16 @@ class ModelEvaluator:
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(self.metrics, f, indent=2)
 
         logger.info(f"Metrics saved to {output_path}")
 
     def print_summary(self) -> None:
         """Print evaluation summary to console."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("MODEL EVALUATION SUMMARY")
-        print("="*60)
+        print("=" * 60)
         print(f"\nAccuracy:  {self.metrics['accuracy']:.4f}")
         print(f"Precision: {self.metrics['precision']:.4f}")
         print(f"Recall:    {self.metrics['recall']:.4f}")
@@ -128,7 +131,7 @@ class ModelEvaluator:
         print(f"ROC-AUC:   {self.metrics['roc_auc']:.4f}")
 
         print("\nConfusion Matrix:")
-        cm = np.array(self.metrics['confusion_matrix'])
+        cm = np.array(self.metrics["confusion_matrix"])
         print(f"  True Negatives:  {self.metrics['true_negatives']}")
         print(f"  False Positives: {self.metrics['false_positives']}")
         print(f"  False Negatives: {self.metrics['false_negatives']}")
@@ -136,7 +139,7 @@ class ModelEvaluator:
 
         print("\nDetailed Classification Report:")
         print(self.get_classification_report())
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
 
 
 class MetricsReporter:
@@ -156,7 +159,7 @@ class MetricsReporter:
             logger.warning(f"Metrics file not found at {metrics_path}")
             return {}
 
-        with open(metrics_path, 'r') as f:
+        with open(metrics_path, "r") as f:
             return json.load(f)
 
     @staticmethod
@@ -171,15 +174,15 @@ class MetricsReporter:
             Dictionary with metric changes
         """
         changes = {}
-        for metric in ['accuracy', 'precision', 'recall', 'f1_score', 'roc_auc']:
+        for metric in ["accuracy", "precision", "recall", "f1_score", "roc_auc"]:
             if metric in current and metric in previous:
                 change = current[metric] - previous[metric]
                 pct_change = (change / previous[metric] * 100) if previous[metric] != 0 else 0
                 changes[metric] = {
-                    'current': current[metric],
-                    'previous': previous[metric],
-                    'change': change,
-                    'pct_change': pct_change
+                    "current": current[metric],
+                    "previous": previous[metric],
+                    "change": change,
+                    "pct_change": pct_change,
                 }
 
         return changes
@@ -194,17 +197,19 @@ class MetricsReporter:
         """
         changes = MetricsReporter.compare_metrics(current, previous)
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("METRICS COMPARISON (Current vs Previous)")
-        print("="*70)
+        print("=" * 70)
 
         for metric, values in changes.items():
-            curr = values['current']
-            prev = values['previous']
-            change = values['change']
-            pct = values['pct_change']
+            curr = values["current"]
+            prev = values["previous"]
+            change = values["change"]
+            pct = values["pct_change"]
 
             indicator = "✓" if change >= 0 else "✗"
-            print(f"{metric:12} {curr:.4f} (prev: {prev:.4f}) {indicator} {change:+.4f} ({pct:+.2f}%)")
+            print(
+                f"{metric:12} {curr:.4f} (prev: {prev:.4f}) {indicator} {change:+.4f} ({pct:+.2f}%)"
+            )
 
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")

@@ -2,7 +2,6 @@
 Tests for config module.
 """
 
-import pytest
 from pathlib import Path
 from src.config import Config, config
 
@@ -62,26 +61,27 @@ class TestConfig:
 
     def test_categorical_features_content(self):
         """Test that categorical features contain expected columns."""
-        expected_features = ['workclass', 'education', 'marital-status', 'occupation']
+        expected_features = ["workclass", "education", "marital-status", "occupation"]
         for feature in expected_features:
             assert feature in config.CATEGORICAL_FEATURES
 
     def test_numerical_features_content(self):
         """Test that numerical features contain expected columns."""
-        expected_features = ['age', 'education-num', 'capital-gain', 'capital-loss']
+        expected_features = ["age", "education-num", "capital-gain", "capital-loss"]
         for feature in expected_features:
             assert feature in config.NUMERICAL_FEATURES
 
     def test_target_variable(self):
         """Test that target variable is defined."""
-        assert config.TARGET == 'income'
+        assert config.TARGET == "income"
 
     def test_training_settings(self):
         """Test that training settings are defined."""
         assert config.CV_FOLDS == 5
-        assert config.SCORING == 'accuracy'
+        assert config.SCORING == "accuracy"
 
     def test_config_is_singleton(self):
         """Test that config behaves as a singleton."""
         from src.config import config as config2
+
         assert config is config2
