@@ -44,6 +44,12 @@ setup(
         "joblib>=1.2.0",
         "requests>=2.28.0",
         "numpy>=1.21.0",
+        "xgboost>=1.7.0",
+        "fastapi>=0.100.0",
+        "uvicorn>=0.20.0",
+        "matplotlib>=3.5.0",
+        "seaborn>=0.12.0",
+        "scipy>=1.9.0",
     ],
     extras_require={
         "dev": [

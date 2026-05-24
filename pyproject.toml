@@ -48,8 +48,8 @@ where = ["src"]
 include = ["src*"]
 
 [project.scripts]
-income-predict = "cli:main"
-income-api = "api:main"
+income-predict = "src.cli:main"
+income-api = "src.api:main"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -91,6 +91,12 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", "build", "dist", "*.egg-info", ".mypy_cache", ".tox", ".venv"]
+per-file-ignores = []
 
 [[tool.mypy.overrides]]
 module = [
