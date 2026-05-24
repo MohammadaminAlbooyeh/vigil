@@ -2,12 +2,16 @@
 FastAPI web service for Income Prediction.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
 from typing import Optional
 import uvicorn
+import logging
 
 from predict import predict_income, predict_proba_income
+from utils.validation import validate_prediction_input, log_validation_errors
+
+logger = logging.getLogger(__name__)
 
 
 app = FastAPI(
@@ -58,6 +62,7 @@ async def predict(request: PredictionRequest):
     Returns the predicted income category (>50K or <=50K).
     """
     try:
+        logger.debug(f"Prediction request received: age={request.age}, workclass={request.workclass}")
         # Convert request to dict
         features = {
             'age': request.age,
@@ -76,17 +81,30 @@ async def predict(request: PredictionRequest):
             'native-country': request.native_country
         }
 
+        # Validate input
+        is_valid, errors = validate_prediction_input(features)
+        if not is_valid:
+            log_validation_errors(errors, features)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"error": "Input validation failed", "details": errors}
+            )
+
         prediction = predict_income(features)
 
         # Convert numeric prediction to label
         prediction_label = ">50K" if prediction == 1 else "<=50K"
+        logger.info(f"Prediction result: {prediction_label}")
 
         return PredictionResponse(
             prediction=str(prediction),
             prediction_label=prediction_label
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Prediction failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
@@ -98,6 +116,7 @@ async def predict_proba(request: PredictionRequest):
     Returns probabilities for both income categories.
     """
     try:
+        logger.debug(f"Probability request received: age={request.age}, workclass={request.workclass}")
         # Convert request to dict
         features = {
             'age': request.age,
@@ -116,7 +135,17 @@ async def predict_proba(request: PredictionRequest):
             'native-country': request.native_country
         }
 
+        # Validate input
+        is_valid, errors = validate_prediction_input(features)
+        if not is_valid:
+            log_validation_errors(errors, features)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"error": "Input validation failed", "details": errors}
+            )
+
         probabilities = predict_proba_income(features)
+        logger.info(f"Probability result: <=50K={probabilities[0]:.4f}, >50K={probabilities[1]:.4f}")
 
         return ProbabilityResponse(
             probabilities={
@@ -125,7 +154,10 @@ async def predict_proba(request: PredictionRequest):
             }
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Probability prediction failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Probability prediction failed: {str(e)}")
 
 

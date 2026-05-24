@@ -4,6 +4,7 @@ Command Line Interface for Income Prediction.
 
 import argparse
 import sys
+import logging
 from pathlib import Path
 
 # Add src to path
@@ -11,9 +12,17 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from predict import predict_income
 
+logger = logging.getLogger(__name__)
+
 
 def main():
     """Main CLI entry point."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logger.info("Starting income prediction CLI")
+
     parser = argparse.ArgumentParser(
         description="Predict income category using machine learning model",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -62,6 +71,7 @@ Examples:
     parser.add_argument('--native-country', type=str, required=True, help='Native country')
 
     args = parser.parse_args()
+    logger.debug(f"CLI args parsed: age={args.age}, workclass={args.workclass}")
 
     # Convert args to dict
     features = {
@@ -83,9 +93,12 @@ Examples:
 
     try:
         prediction = predict_income(features)
+        label = ">50K" if prediction == 1 else "<=50K"
+        logger.info(f"Prediction successful: {label}")
         print(f"Predicted income: {prediction}")
         return 0
     except Exception as e:
+        logger.error(f"Prediction failed: {e}", exc_info=True)
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
