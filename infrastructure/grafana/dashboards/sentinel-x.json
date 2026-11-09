@@ -1,0 +1,199 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": {
+          "type": "prometheus"
+        }
+      }
+    ]
+  },
+  "description": "Sentinel-X Surveillance Platform Dashboard",
+  "gnet": [],
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "showTime": true,
+        "wrap": false
+      },
+      "targets": [
+        {
+          "expr": "sentinel_events_total",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Events",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "showTime": true,
+        "wrap": false
+      },
+      "targets": [
+        {
+          "expr": "sentinel_alerts_total",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Alerts",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "showTime": true,
+        "wrap": false
+      },
+      "targets": [
+        {
+          "expr": "sentinel_devices_online",
+          "refId": "A"
+        }
+      ],
+      "title": "Online Devices",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "showTime": true,
+        "wrap": false
+      },
+      "targets": [
+        {
+          "expr": "sentinel_cameras_streaming",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Cameras",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 16},
+      "id": 5,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(sentinel_events_total[5m])",
+          "legendFormat": "Events/min",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(sentinel_alerts_total[5m])",
+          "legendFormat": "Alerts/min",
+          "refId": "B"
+        }
+      ],
+      "title": "Event Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 28},
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sentinel_event_duration_seconds",
+          "legendFormat": "{{device_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Event Processing Duration",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["sentinel-x", "surveillance"],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": {
+          "type": "prometheus"
+        }
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timezone": "browser",
+  "title": "Sentinel-X Dashboard",
+  "uid": "sentinel-x",
+  "version": 1
+}

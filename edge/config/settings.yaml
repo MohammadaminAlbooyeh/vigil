@@ -1,0 +1,36 @@
+# Sentinel-X Edge Gateway Configuration
+
+edge:
+  camera:
+    source: 0
+    width: 1280
+    height: 720
+    fps: 30
+
+  ai:
+    model_path: models/yolov8n.pt
+    confidence_threshold: 0.5
+    iou_threshold: 0.45
+    max_age: 30
+    min_hits: 3
+    use_hailo: true
+
+  mqtt:
+    broker: 192.168.1.100
+    port: 1883
+    username: sentinel
+    password: sentinel123
+    topic_events: sentinel/events/edge
+    topic_commands: sentinel/commands/edge
+
+  backend:
+    url: http://192.168.1.100:8000
+    api_key: sentinel-api-key-12345
+
+  storage:
+    media_path: /var/sentinel-x/media
+    max_storage_gb: 100
+
+logging:
+  level: INFO
+  file: /var/log/sentinel-x/edge.log
