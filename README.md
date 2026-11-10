@@ -4,59 +4,65 @@ Distributed Edge AI Surveillance Platform — ESP32 camera/sensor/actuator nodes
 
 ## System Architecture
 
-```text
- ┌───────────────────────── DEVICE LAYER ─────────────────────────┐
- │                                                                 │
- │   ┌───────────┐     ┌───────────┐     ┌────────────────┐       │
- │   │ ESP32-CAM │     │ ESP32-S3  │     │ ESP32-Actuator │       │
- │   │ camera    │     │ PIR /     │     │ relay / servo  │       │
- │   │ motion    │     │ mmWave /  │     │ control        │       │
- │   │ servo     │     │ env       │     │                │       │
- │   └─────┬─────┘     └─────┬─────┘     └────────▲───────┘       │
- │         │  MQTT publish   │                    │ MQTT command  │
- └─────────┼─────────────────┼────────────────────┼───────────────┘
-           │                 │                    │
-           ▼                 ▼                    │
- ┌───────────────────── MQTT BROKER (mosquitto) ───┴───────────────┐
- └─────────────────────────────┬───────────────────────────────────┘
-                                ▼
- ┌───────────────────────── EDGE LAYER ─────────────────────────────┐
- │  mqtt_subscriber.py → camera_manager.py                          │
- │                           │                                      │
- │                           ▼                                      │
- │        ┌──────────────────────────────────┐                     │
- │        │   edge/ai  detector → tracker     │                     │
- │        │   (IsolationForest anomaly model) │                     │
- │        └────────────────┬───────────────────┘                     │
- │                           ▼                                      │
- │                  event_publisher.py                               │
- └───────────────────────────┬──────────────────────────────────────┘
-                              │ HTTP / MQTT / Redis
-                              ▼
- ┌───────────────────────── BACKEND (FastAPI) ───────────────────────┐
- │  main.py — lifespan, CORS, routing                                 │
- │   ├─ routes: events · devices · cameras · alerts                   │
- │   ├─ websocket: /ws/live                                           │
- │   └─ redis_consumer (worker) ──┐                                   │
- │                                 ▼                                   │
- │   services: alert_service · anomaly_detector · event_correlator     │
- │             rules_engine · media_service                            │
- │                                 │                                   │
- │                                 ▼                                   │
- │        Postgres (metadata) · Redis (bus) · MinIO (media)            │
- └────────────────────────────────┬──────────────────────────────────┘
-                                   │ WebSocket (/ws/live)
-                                   ▼
- ┌───────────────────────── DASHBOARD (React + Vite) ────────────────┐
- │   Layout → Dashboard page                                          │
- │   ├─ LiveFeed        ├─ AlertPanel                                 │
- │   └─ DeviceStatus    └─ EventLog                                   │
- └─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph DEVICES["📡 Device Layer"]
+        CAM["ESP32-CAM\ncamera · motion · servo"]
+        S3["ESP32-S3\nPIR · mmWave · env sensors"]
+        ACT["ESP32-Actuator\nrelay · servo control"]
+    end
 
- ┌───────────────────────── OBSERVABILITY & OPS ──────────────────────┐
- │  Prometheus ──scrape──▶ Grafana dashboards                         │
- │  Docker Compose (local) · Kubernetes (infrastructure/k8s)          │
- └─────────────────────────────────────────────────────────────────┘
+    BROKER(["MQTT Broker\nmosquitto"])
+
+    subgraph EDGE["🧠 Edge Layer"]
+        SUB["mqtt_subscriber.py"]
+        MGR["camera_manager.py"]
+        AI["edge/ai\ndetector → tracker\n(IsolationForest)"]
+        PUB["event_publisher.py"]
+        SUB --> MGR --> AI --> PUB
+    end
+
+    subgraph BACKEND["⚙️ Backend — FastAPI"]
+        MAIN["main.py\nrouting · CORS · lifespan"]
+        RC["redis_consumer\n(worker)"]
+        SVC["services\nalert_service · anomaly_detector\nevent_correlator · rules_engine\nmedia_service"]
+        WS(["/ws/live\nWebSocket"])
+        MAIN --> RC --> SVC
+        SVC --> WS
+    end
+
+    subgraph STORE["💾 Storage"]
+        PG[("Postgres\nmetadata")]
+        RD[("Redis\nevent bus")]
+        MI[("MinIO\nmedia")]
+    end
+
+    subgraph DASH["🖥️ Dashboard — React + Vite"]
+        LAYOUT["Layout → Dashboard page"]
+        LF["LiveFeed"]
+        AP["AlertPanel"]
+        DS["DeviceStatus"]
+        EL["EventLog"]
+        LAYOUT --> LF & AP & DS & EL
+    end
+
+    subgraph OBS["📊 Observability & Ops"]
+        PROM["Prometheus"]
+        GRAF["Grafana"]
+        OPS["Docker Compose / Kubernetes"]
+        PROM --> GRAF
+    end
+
+    CAM -- "MQTT publish" --> BROKER
+    S3 -- "MQTT publish" --> BROKER
+    BROKER -- "MQTT command" --> ACT
+    BROKER --> SUB
+    PUB -- "HTTP / MQTT / Redis" --> MAIN
+    SVC --> PG
+    SVC --> RD
+    SVC --> MI
+    WS -- "live updates" --> LAYOUT
+    PROM -. "scrapes metrics" .-> MAIN
 ```
 
 **Data flow:** sensor/camera events publish from the ESP32 nodes over MQTT → the edge gateway consumes them, runs the AI detector/tracker, and republishes enriched events → the FastAPI backend's Redis consumer worker ingests them, applies the rules engine/event correlator/alert service, and persists to Postgres + MinIO → clients get live updates over `/ws/live`, rendered by the React dashboard. Alerts can trigger commands back to actuator nodes over MQTT.
