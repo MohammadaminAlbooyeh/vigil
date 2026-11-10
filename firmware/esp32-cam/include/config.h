@@ -38,5 +38,6 @@
 
 #define MOTION_PIN 14
 #define MOTION_THRESHOLD 3
+#define MOTION_COOLDOWN_MS 5000
 
 #endif

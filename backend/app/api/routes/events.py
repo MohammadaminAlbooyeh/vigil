@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 from app.core.database import get_db
@@ -17,12 +17,14 @@ class EventCreate(BaseModel):
     metadata: Optional[dict] = None
 
 class EventResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     device_id: str
     event_type: str
     severity: str
     timestamp: datetime
-    metadata: Optional[dict] = None
+    event_metadata: Optional[dict] = None
 
 @router.post("/", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
 async def create_event(event: EventCreate, db = Depends(get_db)):
@@ -31,7 +33,7 @@ async def create_event(event: EventCreate, db = Depends(get_db)):
         device_id=event.device_id,
         event_type=event.event_type,
         severity=event.severity,
-        metadata=event.metadata
+        event_metadata=event.metadata
     )
     db.add(db_event)
     await db.commit()

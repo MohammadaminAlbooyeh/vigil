@@ -14,7 +14,7 @@ class Event(Base):
     event_type = Column(String, index=True)
     severity = Column(String, default="info")
     timestamp = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(JSON, nullable=True)
+    event_metadata = Column("metadata", JSON, nullable=True)
 
     def __repr__(self):
         return f"<Event(id={self.id}, device={self.device_id}, type={self.event_type})>"

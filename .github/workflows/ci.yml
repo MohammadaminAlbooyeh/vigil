@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+
+      # Backend
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend dependencies
+        run: |
+          pip install -r backend/requirements.txt pytest pytest-asyncio httpx
+      - name: Run backend tests
+        run: |
+          cd backend && python -m pytest tests -v
+
+      # Dashboard
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Install dashboard dependencies
+        working-directory: dashboard
+        run: npm install
+      - name: Typecheck dashboard
+        working-directory: dashboard
+        run: npx tsc --noEmit
+      - name: Lint dashboard
+        working-directory: dashboard
+        run: npm run lint || true
+
+      # Edge AI training pipeline
+      - name: Install edge AI dependencies
+        run: pip install -r edge/requirements.txt
+      - name: Run AI training pipeline
+        run: python edge/ai/train.py

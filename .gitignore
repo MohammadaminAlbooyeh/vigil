@@ -1,0 +1,29 @@
+# Sentinel-X
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Trained model binaries (regenerate with: python edge/ai/train.py)
+edge/ai/models/*.joblib
+edge/ai/models/*.pkl
+
+# Logs
+*.log

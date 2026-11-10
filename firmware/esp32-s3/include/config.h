@@ -17,6 +17,8 @@
 
 #define PIR_PIN 4
 #define PIR_DELAY_MS 2000
+#define PIR_WARMUP_MS 10000
+#define PIR_COOLDOWN_MS 5000
 
 #define RADAR_RX 16
 #define RADAR_TX 17
